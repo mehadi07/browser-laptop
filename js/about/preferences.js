@@ -286,6 +286,12 @@ class LedgerTable extends ImmutableComponent {
       return null
     }
     return <div id='ledgerTable'>
+      <SettingCheckbox
+        dataL10nId='hideExcluded'
+        prefKey={settings.HIDE_EXCLUDED_SITES}
+        settings={this.props.settings}
+        onChangeSetting={this.props.onChangeSetting}
+      />
       <SortableTable
         headings={['rank', 'publisher', 'include', 'views', 'timeSpent', 'percentage']}
         defaultHeading='rank'
@@ -303,7 +309,13 @@ class LedgerTable extends ImmutableComponent {
             location: entry.get('publisherURL')
           }
         }).toJS()}
-        rows={this.synopsis.map((synopsis) => this.getRow(synopsis)).toJS()} />
+        rows={this.synopsis.filter((synopsis) => {
+          console.log(getSetting(settings.HIDE_EXCLUDED_SITES))
+          return !getSetting(settings.HIDE_EXCLUDED_SITES) || this.enabledForSite(synopsis)
+        }).map((synopsis) => {
+          return this.getRow(synopsis)
+        }).toJS()}
+        />
     </div>
   }
 }
@@ -970,6 +982,8 @@ class PaymentsTab extends ImmutableComponent {
   get tableContent () {
     // TODO: This should be sortable. #2497
     return <LedgerTable ledgerData={this.props.ledgerData}
+      settings={this.props.settings}
+      onChangeSetting={this.props.onChangeSetting}
       siteSettings={this.props.siteSettings} />
   }
 
@@ -1839,6 +1853,7 @@ class AboutPreferences extends React.Component {
   }
 
   onChangeSetting (key, value) {
+    console.log(key, value)
     this.setState({
       settings: this.state.settings.set(key, value)
     })
